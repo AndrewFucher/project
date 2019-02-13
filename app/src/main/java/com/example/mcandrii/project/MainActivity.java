@@ -5,16 +5,13 @@ import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
     Ships[] ships = new Ships[3];
-    int freeDocs;
-    int maxDocs;
-    ArrayList<Future<Integer>> docs = new ArrayList<Future<Integer>>();
-    ArrayList<ExecutorService> aaa = new ArrayList<ExecutorService>();
+    private int maxDocs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +22,9 @@ public class MainActivity extends AppCompatActivity {
             ships[i] = new Ships(i+1, 10);
         }
 
-        System.out.println("FIND ME " + docs);
+        System.out.println("FIND ME " + this.maxDocs);
 
-        freeDocs = 2;
-        maxDocs = 2;
+        this.maxDocs = 2;
 
         try {
             runThread();
@@ -38,35 +34,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void runThread() throws Exception{
+    public void runThread(){
+
+        ExecutorService executorService = Executors.newFixedThreadPool(this.maxDocs);
 
         for(int i = 0; i < ships.length; i++) {
-
-            if (freeDocs <= 0) {
-                System.out.println("FIND ME 13u81923");
-                freeDocs += docs.get(i % maxDocs).get();
-            }
-
-            System.out.println("FIND ME");
-
-            if (freeDocs > aaa.size()) {
-                System.out.println("FIND ME !!!" + i % maxDocs);
-                aaa.add(i%maxDocs, Executors.newCachedThreadPool());
-
-                System.out.println("FIND ME !!!" + i % maxDocs);
-
-                docs.add(i%maxDocs, aaa.get(i%maxDocs).submit(new MyThread(ships[i])));
-
-                freeDocs += docs.get(i % maxDocs).get();
-
-                System.out.println("FIND ME !!" + aaa.size());
-
-            } else {
-                docs.set(i % maxDocs, aaa.get(i % maxDocs).submit(new MyThread(ships[i])));
-            }
-            freeDocs--;
-            System.out.println("FIND ME meeee");
+            executorService.execute(new MyThread(ships[i]));
         }
+        executorService.shutdown();
 
         /*
         ExecutorService executorService = new Executors.newCachedThreadPool();
